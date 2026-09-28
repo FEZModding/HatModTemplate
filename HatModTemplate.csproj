@@ -1,0 +1,76 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <GenerateDependencyFile>true</GenerateDependencyFile>
+  </PropertyGroup>
+
+  <Import Project="UserProperties.xml" Condition="Exists('UserProperties.xml')" />
+
+  <Target Name="VerifyModReferences" BeforeTargets="ResolveReferences">
+    <Error Text="Copy UserProperties.xml.template to UserProperties.xml and set FezDir."
+      Condition="'$(FezDir)' == ''" />
+    <Error Text="FEZ game directory not found: $(FezDir)"
+      Condition="'$(FezDir)' != '' and !Exists('$(FezDir)')" />
+    <Error Text="FEZ references missing from $(FezDir). Install HAT into FEZ first."
+      Condition="'$(FezDir)' != '' and Exists('$(FezDir)') and (!Exists('$(FezDir)/HAT.dll') or !Exists('$(FezDir)/FezEngine.dll') or !Exists('$(FezDir)/FNA.dll'))" />
+  </Target>
+
+  <PropertyGroup>
+    <ModOutputDir Condition="'$(ModOutputDir)' == ''">$(MSBuildProjectDirectory)/out</ModOutputDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Common">
+      <HintPath>$(FezDir)\Common.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ContentSerialization">
+      <HintPath>$(FezDir)\ContentSerialization.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="EasyStorage">
+      <HintPath>$(FezDir)\EasyStorage.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="FEZ">
+      <HintPath>$(FezDir)\HAT.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="FezEngine">
+      <HintPath>$(FezDir)\FezEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="FNA">
+      <HintPath>$(FezDir)\FNA.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="XnaWordWrapCore">
+      <HintPath>$(FezDir)\XnaWordWrapCore.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MonoMod.RuntimeDetour">
+      <HintPath>$(MonoModDir)\MonoMod.RuntimeDetour.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MonoMod.Utils">
+      <HintPath>$(MonoModDir)\MonoMod.Utils.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil">
+      <HintPath>$(MonoModDir)\Mono.Cecil.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="PrepareMod" AfterTargets="Build">
+    <MakeDir Directories="$(ModOutputDir)" />
+    <Copy
+      SourceFiles="$(TargetPath);$(TargetDir)$(TargetName).deps.json;$(MSBuildProjectDirectory)/Metadata.xml"
+      DestinationFolder="$(ModOutputDir)" />
+  </Target>
+</Project>

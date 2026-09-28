@@ -1,0 +1,11 @@
+<Metadata>
+  <Name>HatModTemplate</Name>
+  <Description>A starting point for a HAT code mod.</Description>
+  <Author>YourName</Author>
+  <Version>0.1.0</Version>
+  <LibraryName>HatModTemplate.dll</LibraryName>
+  <Entrypoint>HatModTemplate.ModComponent</Entrypoint>
+  <Dependencies>
+    <DependencyInfo Name="HAT" MinimumVersion="3.0" />
+  </Dependencies>
+</Metadata>

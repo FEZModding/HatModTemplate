@@ -397,3 +397,4 @@ FodyWeavers.xsd
 # Custom properties and output directory for HAT mod
 UserProperties.xml
 [Oo]ut/
+[Oo]ut-assets/

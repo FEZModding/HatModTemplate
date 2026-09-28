@@ -18,6 +18,8 @@ Game and HAT assemblies are resolved from the local FEZ installation and are not
 
 ## Assets with or without code
 
+The separate `Assets.targets` file defines both asset packaging targets and is imported by the C# project.
+
 Put loose assets under `Assets/`, keeping their game asset paths relative to that directory. For example, an asset named `background planes/gomez_house_a` belongs at `Assets/background planes/gomez_house_a.xnb` (or a supported source format such as `.png`). Music OGG files belong under `Assets/Music/`, such as `Assets/Music/villageville/bed.ogg`. You can also place a packed `Assets.pak` at the repository root. HAT loads loose assets and packed assets from the same mod.
 
 For a **code and asset mod**, run the normal `dotnet build -c Release`. The build copies `Assets/` recursively and `Assets.pak` beside the DLL and metadata in `out/`.

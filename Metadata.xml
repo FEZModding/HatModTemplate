@@ -1,6 +1,6 @@
 <Metadata>
   <Name>HatModTemplate</Name>
-  <Description>A starting point for a HAT code mod.</Description>
+  <Description>A starting point for a HAT mod.</Description>
   <Author>YourName</Author>
   <Version>0.1.0</Version>
   <LibraryName>HatModTemplate.dll</LibraryName>

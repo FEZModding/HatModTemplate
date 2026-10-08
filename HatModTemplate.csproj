@@ -9,11 +9,12 @@
     <GenerateDependencyFile>true</GenerateDependencyFile>
   </PropertyGroup>
 
-  <Import Project="UserProperties.xml" Condition="Exists('UserProperties.xml')" />
+  <Import Project="$(MSBuildThisFileDirectory)UserProperties.xml"
+    Condition="Exists('$(MSBuildThisFileDirectory)UserProperties.xml')" />
 
   <Target Name="VerifyModReferences" BeforeTargets="ResolveReferences">
-    <Error Text="Copy UserProperties.xml.template to UserProperties.xml and set FezDir."
-      Condition="'$(FezDir)' == ''" />
+    <Error Text="You forgot to configure UserProperties.xml"
+      Condition="!Exists('$(MSBuildThisFileDirectory)UserProperties.xml')" />
     <Error Text="FEZ game directory not found: $(FezDir)"
       Condition="'$(FezDir)' != '' and !Exists('$(FezDir)')" />
     <Error Text="FEZ references missing from $(FezDir). Install HAT into FEZ first."

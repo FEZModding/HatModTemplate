@@ -1,48 +1,78 @@
 # HAT mod template
 
-A starting point for [HAT](https://github.com/FEZModding/HAT) code mods, asset mods, or both.
+Template for FEZ mods loaded by [HAT](https://github.com/FEZModding/HAT). Supports code mods, asset mods, and combined code and asset mods.
 
-> [!NOTE]
-> The sample component logs the current FEZ level when it changes.
+The sample `ModComponent` logs the current FEZ level name when it changes.
 
-## Code mod
+## Code mod configuration
 
-1. Use this directory as a new repository. Rename `HatModTemplate.csproj`, `HatModTemplate` in `ModComponent.cs`, and the matching values in `Metadata.xml`. The metadata `Entrypoint` must be the full namespace and class name of a public `GameComponent` with a public `Game` constructor.
-2. Copy `UserProperties.xml.template` to `UserProperties.xml`. Set `FezDir` to the FEZ installation directory that contains `HAT.dll`, `FezEngine.dll`, and `FNA.dll`. This file is ignored by Git so local paths stay private.
-3. Install the .NET 10 SDK and run the Debug build or Release publish command in [Building mod](#building-mod).
-4. The build puts `HatModTemplate.dll`, its `.deps.json`, `Metadata.xml`, and any assets in `out/`. Copy the **contents** of `out/` to a folder under FEZ's `Mods` directory, or set `ModOutputDir` in `UserProperties.xml` to build there directly. Restart FEZ to load the mod.
+Code mods require the .NET 10 SDK and a FEZ installation with HAT 3.0.
 
-`Metadata.xml` names the library and the single component HAT should load. To add more components, create them from `ModComponent` through `ServiceHelper.AddComponent` or omit the `Entrypoint` element to let HAT load all public `GameComponent` classes.
+1. Rename `HatModTemplate.csproj` and the `HatModTemplate` namespace in `ModComponent.cs` for the mod.
+2. Update the mod name, description, author, version, `LibraryName`, and `Entrypoint` in `Metadata.xml`.
+3. Copy `UserProperties.xml.template` to `UserProperties.xml` and configure the properties below. `UserProperties.xml` is ignored by Git.
 
-Game and HAT assemblies are resolved from the local FEZ installation and are not committed to this repository. Add more references with `<Private>false</Private>` when your mod needs them.
+| Property       | Description                                                                                                                                                    |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `FezDir`       | FEZ installation directory containing `HAT.dll`, `FezEngine.dll`, and `FNA.dll`.                                                                               |
+| `MonoModDir`   | MonoMod assembly directory. The properties template sets this to `$(FezDir)/HATDependencies/MonoMod`.                                                          |
+| `ModOutputDir` | Mod package output directory. The properties template sets this to `$(FezDir)/Mods/HatModTemplate`; the project defaults to `out/` when the property is unset. |
 
-## Assets with or without code
+`LibraryName` specifies the mod DLL filename. `Entrypoint` specifies the fully qualified name of a public `GameComponent` class with a public constructor that accepts a `Game` instance. The sample metadata requires HAT version 3.0 or later.
 
-The separate `Assets.targets` file defines both asset packaging targets and is imported by the C# project.
+Additional components can be registered from `ModComponent` through `ServiceHelper.AddComponent`. If `Entrypoint` is omitted, HAT loads all public `GameComponent` classes.
 
-Put loose assets under `Assets/`, keeping their game asset paths relative to that directory. For example, an asset named `background planes/gomez_house_a` belongs at `Assets/background planes/gomez_house_a.xnb` (or a supported source format such as `.png`). Music OGG files belong under `Assets/Music/`, such as `Assets/Music/villageville/bed.ogg`. You can also place a packed `Assets.pak` at the repository root. HAT loads loose assets and packed assets from the same mod.
+Game, HAT, and MonoMod assemblies are referenced from local directories and are not included in the repository. Additional game assembly references should specify `<Private>false</Private>` to exclude them from build output.
 
-For a **code and asset mod**, run either command in [Building mod](#building-mod). The build copies `Assets/` recursively and `Assets.pak` beside the DLL and metadata in `ModOutputDir` (or `out/` if unset).
+## Asset layout
 
-For an **asset-only mod**, add at least one asset, then run `dotnet msbuild -t:PackageAssetsOnly`. This creates `out-assets/` with `Metadata.xml` and your assets; it does not need a .NET compile or `UserProperties.xml`. The target clears the code-only `LibraryName` and `Entrypoint` fields in its output metadata. Copy the **contents** of `out-assets/` to a folder under FEZ's `Mods` directory, or zip those contents with `Metadata.xml` at the ZIP root.
+Loose assets are stored under `Assets/`, with paths relative to that directory matching game asset paths. Examples:
 
-The build copies files but does not remove assets you deleted from source. Clear old output files before packaging an updated mod.
+- `Assets/background planes/gomez_house_a.xnb` for the asset `background planes/gomez_house_a`. Supported source formats, such as `.png`, can also be used.
+- `Assets/Music/villageville/bed.ogg` for a music OGG file.
 
-## Building mod
+A packed `Assets.pak` can be placed at the repository root. HAT supports loose and packed assets in the same mod.
 
-After installing the .NET 10 SDK and configuring `UserProperties.xml`, run these commands from the repository root.
+Asset packaging targets are defined in `Assets.targets`, which is imported by the C# project.
 
-Build the mod in Debug mode:
+## Build and packaging
+
+Run commands from the repository root.
+
+### Code and combined mods
+
+Debug build:
 
 ```sh
 dotnet build -c Debug
 ```
 
-Publish the mod in Release mode:
+Release publish:
 
 ```sh
 dotnet publish -c Release -p:ContinuousIntegrationBuild=true
 ```
 
-Both commands run the mod packaging targets, copying the DLL, dependency file, metadata, and assets to `ModOutputDir` (or `out/` if unset).
-Use that folder's contents to install or distribute the mod.
+Both commands copy the mod DLL, `.deps.json`, and `Metadata.xml` to `ModOutputDir`. Any files under `Assets/` are copied recursively to the output `Assets/` directory, and `Assets.pak` is copied to the output root if present.
+
+### Asset-only mods
+
+At least one file under `Assets/` or a root-level `Assets.pak` is required.
+
+Asset-only mods can be packaged manually without the .NET 10 SDK. Place `Metadata.xml` and the `Assets/` directory, `Assets.pak`, or both in a package directory. Update the mod metadata and remove the `LibraryName` and `Entrypoint` elements or leave their values empty. Preserve the asset paths described in [Asset layout](#asset-layout).
+
+Alternatively, use the .NET 10 SDK to run the packaging target:
+
+```sh
+dotnet msbuild -t:PackageAssetsOnly
+```
+
+This target packages metadata and assets without compiling code or requiring `UserProperties.xml`. Output defaults to `out-assets/` and can be changed through the `AssetOnlyOutputDir` property. The output metadata has empty `LibraryName` and `Entrypoint` fields.
+
+Packaging copies files without removing output assets that were deleted from source. Remove obsolete output files before packaging an updated mod.
+
+## Installation and distribution
+
+Copy the contents of the package output directory to a mod folder under the FEZ installation's `Mods` directory. If `ModOutputDir` already points to that folder, the build writes the package there directly. Restart FEZ to load the mod.
+
+For ZIP distribution, archive the package contents with `Metadata.xml` at the ZIP root.
